@@ -5,6 +5,11 @@
 [Bb]uilds/
 [Bb]uild*/
 [Ll]ogs/
+[Uu]serSettings/
+
+*calibration.xml
+*.vrmanifest
+*.vsconfig
 
 *.meta
 *.log
