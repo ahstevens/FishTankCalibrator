@@ -1,16 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
+using System.Xml;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using Valve.VR;
 
 public class CalibrationManager : MonoBehaviour
 {
-    public string preferredTrackerName;
-    public GameObject controller;
-    public GameObject calibrationProbe;
-
     [DllImport("ScreenCalibrator.dll")]
     private static extern IntPtr CalcUsingCorners(float ULx, float ULy, float ULz, float URx, float URy, float URz, float LRx, float LRy, float LRz, float LLx, float LLy, float LLz);
 
@@ -23,211 +19,245 @@ public class CalibrationManager : MonoBehaviour
     [DllImport("ScreenCalibrator.dll")]
     private static extern float getPlaneEQValue(IntPtr instance, int index);
 
-    private GameObject probePoint;
+    public GameObject probePoint;
+
+    private GameObject currentScreen;
+    private GameObject lastCornerObject;
 
     private Vector3 tmpScreenUL;
     private Vector3 tmpScreenUR;
     private Vector3 tmpScreenLR;
     private Vector3 tmpScreenLL;
-    private int onCorner;
-    private int screenCounter;
 
     GameObject cornerSpherePrefab;
 
     String outPath;
 
+    struct ProjectionSurface
+    {
+        public Vector3 topLeft;
+        public Vector3 topRight;
+        public Vector3 bottomRight;
+        public Vector3 bottomLeft;
+        public ProjectionSurface(Vector3 topLeft, Vector3 topRight, Vector3 bottomRight, Vector3 bottomLeft)
+        {
+            this.topLeft = topLeft;
+            this.topRight = topRight;
+            this.bottomRight = bottomRight;
+            this.bottomLeft = bottomLeft;
+        }
+    }
+
+    enum SurfaceCorner
+    {
+        TopLeft,
+        TopRight,
+        BottomRight,
+        BottomLeft,
+        NONE
+    } 
+    
+    private SurfaceCorner corner;
+
+    private List<ProjectionSurface> surfaces;
+
     // Start is called before the first frame update
     void Start()
     {
-        screenCounter = 0;
-        onCorner = 0;
-        //string timeAtStart = System.DateTime.Now.ToString();
-        //Debug.Log("Time at Start:" + timeAtStart);
-        //outPath = "C:\\ARStudyLogs\\" + timeAtStart.Replace('/', '-').Replace(' ', '-').Replace(':', '-') + "\\";
+        surfaces = new List<ProjectionSurface>();
+
         outPath = Application.dataPath;
-        Debug.Log("Out Path:" + outPath);
 
+        corner = SurfaceCorner.NONE;
 
-        probePoint = GameObject.Find("probePoint");
+        if (probePoint == null)
+        {
+            probePoint = GameObject.Find("probePoint");
+        }
+
         cornerSpherePrefab = Resources.Load("CornerSphere", typeof(GameObject)) as GameObject;
-
-        //help user find device number for their tracker by printing device IDs
-        int trackerID = -1;
-        SteamVR_TrackedObject.EIndex trackerEIndex = (SteamVR_TrackedObject.EIndex)1;
-        var system = OpenVR.System;
-        if (system == null)
-        {
-            Debug.Log("ERROR 724781 in CalibrationManager, SteamVR not active?");
-        }
-        else for (int i = 0; i < 9; i++)
-            {
-
-                var error = ETrackedPropertyError.TrackedProp_Success;
-                uint capacity = system.GetStringTrackedDeviceProperty((uint)i, ETrackedDeviceProperty.Prop_RenderModelName_String, null, 0, ref error);
-                if (capacity <= 1)
-                {
-                    Debug.Log("Failed to get render model name for tracked object device #:" + i);
-                    continue;
-                }
-
-                var buffer = new System.Text.StringBuilder((int)capacity);
-                system.GetStringTrackedDeviceProperty((uint)i, ETrackedDeviceProperty.Prop_RenderModelName_String, buffer, capacity, ref error);
-
-                Debug.Log("SteamVR Device #" + i + " is: " + buffer.ToString());
-
-                //if (buffer.ToString().Contains("{htc}vr_tracker_vive_1_0") || buffer.ToString().Contains("{htc}vr_tracker_vive_3_0"))
-                if (buffer.ToString().Contains(preferredTrackerName))
-                {
-                    trackerID = i;
-                    trackerEIndex = (SteamVR_TrackedObject.EIndex)i;
-                }
-            }
-        if (trackerID == -1)
-        {
-            Debug.Log("ERROR 3815: Preferred Tracker Device Not Found!");
-        }
-        else
-        {
-            Debug.Log("Preferred Tracker Device Found: Device #" + trackerID);
-            calibrationProbe.GetComponent<SteamVR_TrackedObject>().index = trackerEIndex;
-            controller.GetComponent<SteamVR_TrackedObject>().index = trackerEIndex;
-            controller.GetComponent<SteamVR_RenderModel>().index = trackerEIndex;
-        }
-
     }
 
 
     // Update is called once per frame
     void Update()
     {
-
-        //if (Input.GetKeyDown(KeyCode.S))
-        //{
-        
-        //    if (screenCounter == 0)
-        //    {
-                
-        //    }
-
-
-        //    onCorner = 0;
-        //}
         if (Input.GetKeyDown(KeyCode.C))
         {
-            Debug.Log("Corner set: " + probePoint.transform.position.x + ", " + probePoint.transform.position.y + ", " + probePoint.transform.position.z);
-            if (onCorner == 0)
-            {
-                tmpScreenUL = probePoint.transform.position;
-                GameObject tmpCorner1 = Instantiate(cornerSpherePrefab);
-                tmpCorner1.name = "Screen #" + screenCounter + " Set UL";
-                tmpCorner1.transform.position = tmpScreenUL;
-                onCorner = 1;
-            }
-            else if (onCorner == 1)
-            {
-                tmpScreenUR = probePoint.transform.position;
-                GameObject tmpCorner2 = Instantiate(cornerSpherePrefab);
-                //tmpCorner2.name = "Set Corner Point UR";
-                tmpCorner2.name = "Screen #" + screenCounter + " Set UR";
-                tmpCorner2.transform.position = tmpScreenUR;
-                onCorner = 2;
-            }
-            else if (onCorner == 2)
-            {
-                tmpScreenLR = probePoint.transform.position;
-                GameObject tmpCorner3 = Instantiate(cornerSpherePrefab);
-                //tmpCorner3.name = "Set Corner Point LR";
-                tmpCorner3.name = "Screen #" + screenCounter + " Set LR";
-                tmpCorner3.transform.position = tmpScreenLR;
-                onCorner = 3;
-            }
-            else if (onCorner == 3)
-            {
-                tmpScreenLL = probePoint.transform.position;
-                GameObject tmpCorner4 = Instantiate(cornerSpherePrefab);
-                //tmpCorner4.name = "Set Corner Point LL";
-                tmpCorner4.name = "Screen #" + screenCounter + " Set LL";
-                tmpCorner4.transform.position = tmpScreenLL;
-
-                Debug.Log("Calculating Rectified Screen Corners");
-
-                Debug.Log("odl UL " + tmpScreenUL);
-                Debug.Log("old UR " + tmpScreenUR);
-                Debug.Log("old LR " + tmpScreenLR);
-                Debug.Log("old LL " + tmpScreenLL);
-                IntPtr screenCalibrator = CalcUsingCorners(tmpScreenUL.x, tmpScreenUL.y, tmpScreenUL.z, tmpScreenUR.x, tmpScreenUR.y, tmpScreenUR.z, tmpScreenLR.x, tmpScreenLR.y, tmpScreenLR.z, tmpScreenLL.x, tmpScreenLL.y, tmpScreenLL.z);
-                Debug.Log("calibrator address: " + screenCalibrator); // => Show the pointer address.
-                Vector3 newUL = new Vector3(getCornerValue(screenCalibrator, 0), getCornerValue(screenCalibrator, 1), getCornerValue(screenCalibrator, 2));
-                Vector3 newUR = new Vector3(getCornerValue(screenCalibrator, 3), getCornerValue(screenCalibrator, 4), getCornerValue(screenCalibrator, 5));
-                Vector3 newLR = new Vector3(getCornerValue(screenCalibrator, 6), getCornerValue(screenCalibrator, 7), getCornerValue(screenCalibrator, 8));
-                Vector3 newLL = new Vector3(getCornerValue(screenCalibrator, 9), getCornerValue(screenCalibrator, 10), getCornerValue(screenCalibrator, 11));
-                Debug.Log("new UL " + newUL);
-                Debug.Log("new UR " + newUR);
-                Debug.Log("new LR " + newLR);
-                Debug.Log("new LL " + newLL);
-
-
-                GameObject tmpCorner5 = Instantiate(cornerSpherePrefab);
-                GameObject tmpCorner6 = Instantiate(cornerSpherePrefab);
-                GameObject tmpCorner7 = Instantiate(cornerSpherePrefab);
-                GameObject tmpCorner8 = Instantiate(cornerSpherePrefab);
-                tmpCorner5.name = "Screen #" + screenCounter + " Fixed Corner UL";
-                tmpCorner6.name = "Screen #" + screenCounter + " Fixed Corner UR";
-                tmpCorner7.name = "Screen #" + screenCounter + " Fixed Corner LR";
-                tmpCorner8.name = "Screen #" + screenCounter + " Fixed Corner LL";
-                tmpCorner5.transform.position = newUL;
-                tmpCorner6.transform.position = newUR;
-                tmpCorner7.transform.position = newLR;
-                tmpCorner8.transform.position = newLL;
-                tmpCorner5.GetComponent<MeshRenderer>().material.color = Color.red;
-                tmpCorner6.GetComponent<MeshRenderer>().material.color = Color.red;
-                tmpCorner7.GetComponent<MeshRenderer>().material.color = Color.red;
-                tmpCorner8.GetComponent<MeshRenderer>().material.color = Color.red;
-
-                spawnNewQuad("Screen " + screenCounter.ToString(), newUL, newUR, newLR, newLL);
-
-
-                //WRITE EVERYTHING ABOUT THIS SCREEN TO FILE
-                if (screenCounter == 0)
-                {
-                    WriteToFile("<CAVE>\n");
-                }
-                WriteToFile("  <Screen>\n");
-                WriteToFile("    <Number>" + screenCounter + "</Number>\n");
-                WriteToFile("    <UL>" + newUL.x + ", " + newUL.y + ", " + newUL.z + "</UL>\n");
-                WriteToFile("    <UR>" + newUR.x + ", " + newUR.y + ", " + newUR.z + "</UR>\n");
-                WriteToFile("    <LR>" + newLR.x + ", " + newLR.y + ", " + newLR.z + "</LR>\n");
-                WriteToFile("    <LL>" + newLL.x + ", " + newLL.y + ", " + newLL.z + "</LL>\n");
-                WriteToFile("  </Screen>\n");
-
-                screenCounter++;
-                onCorner = 0;
-                freeCalibration(screenCalibrator);
-                //Debug.Log("Corner set: " + probePoint.transform.position.x + ", " + probePoint.transform.position.y + ", " + probePoint.transform.position.z);
-
-
-            }
-
+            SetCorner();
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.D))
         {
-
+            RemoveLastScreen();
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RemoveLastCorner();
+        }
 
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            SaveCalibration();
+        }
 
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            SetCamera();
+        }
     }//end Update()
 
-    void OnDisable()
+    void SetCorner()
     {
-        if (screenCounter > 0)
+        if (corner == SurfaceCorner.NONE)
         {
-            WriteToFile("</CAVE>\n");
+            currentScreen = new GameObject("Screen " + surfaces.Count.ToString());
+            corner = SurfaceCorner.TopLeft;
         }
-    }//end OnDisable()
 
-    void spawnNewQuad(String name, Vector3 UL, Vector3 UR, Vector3 LR, Vector3 LL)
+        Debug.Log("Corner set: " + probePoint.transform.position.x + ", " + probePoint.transform.position.y + ", " + probePoint.transform.position.z);
+
+        switch (corner)
+        {
+            case SurfaceCorner.TopLeft:
+                tmpScreenUL = probePoint.transform.position;
+                lastCornerObject = Instantiate(cornerSpherePrefab, currentScreen.transform);
+                lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Top Left";
+                lastCornerObject.transform.position = tmpScreenUL;
+                corner = SurfaceCorner.TopRight;
+                break;
+
+            case SurfaceCorner.TopRight:
+                tmpScreenUR = probePoint.transform.position;
+                lastCornerObject = Instantiate(cornerSpherePrefab, currentScreen.transform);
+                //tmpCorner2.name = "Set Corner Point UR";
+                lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Top Right";
+                lastCornerObject.transform.position = tmpScreenUR;
+                corner = SurfaceCorner.BottomRight;
+                break;
+
+            case SurfaceCorner.BottomRight:
+                tmpScreenLR = probePoint.transform.position;
+                lastCornerObject = Instantiate(cornerSpherePrefab, currentScreen.transform);
+                //tmpCorner3.name = "Set Corner Point LR";
+                lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Bottom Right";
+                lastCornerObject.transform.position = tmpScreenLR;
+                corner = SurfaceCorner.BottomLeft;
+                break;
+
+            case SurfaceCorner.BottomLeft:
+                tmpScreenLL = probePoint.transform.position;
+                lastCornerObject = Instantiate(cornerSpherePrefab, currentScreen.transform);
+                //tmpCorner4.name = "Set Corner Point LL";
+                lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Bottom Left";
+                lastCornerObject.transform.position = tmpScreenLL;
+
+                ProjectionSurface rectifiedScreen = Rectify(new ProjectionSurface(tmpScreenUL, tmpScreenUR, tmpScreenLR, tmpScreenLL));
+
+                SpawnRectifiedCorners(rectifiedScreen);
+
+                var newSurface = SpawnQuad("Screen Surface " + surfaces.Count.ToString(), rectifiedScreen);
+
+                newSurface.transform.parent = currentScreen.transform;
+
+                surfaces.Add(rectifiedScreen);
+
+                corner = SurfaceCorner.NONE;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    ProjectionSurface Rectify(ProjectionSurface probedScreen)
+    {
+        Debug.Log("Calculating Rectified Screen Corners");
+
+        IntPtr screenCalibrator = CalcUsingCorners(tmpScreenUL.x, tmpScreenUL.y, tmpScreenUL.z, tmpScreenUR.x, tmpScreenUR.y, tmpScreenUR.z, tmpScreenLR.x, tmpScreenLR.y, tmpScreenLR.z, tmpScreenLL.x, tmpScreenLL.y, tmpScreenLL.z);
+
+        var rectifiedScreen = new ProjectionSurface(
+            new Vector3(getCornerValue(screenCalibrator, 0), getCornerValue(screenCalibrator, 1), getCornerValue(screenCalibrator, 2)),
+            new Vector3(getCornerValue(screenCalibrator, 3), getCornerValue(screenCalibrator, 4), getCornerValue(screenCalibrator, 5)),
+            new Vector3(getCornerValue(screenCalibrator, 6), getCornerValue(screenCalibrator, 7), getCornerValue(screenCalibrator, 8)),
+            new Vector3(getCornerValue(screenCalibrator, 9), getCornerValue(screenCalibrator, 10), getCornerValue(screenCalibrator, 11))
+        );
+
+        freeCalibration(screenCalibrator);
+
+        //Debug.Log("Probed Top Left " + probedScreen.topLeft);
+        //Debug.Log("Probed Top Right " + probedScreen.topRight);
+        //Debug.Log("Probed Bottom Right " + probedScreen.bottomRight);
+        //Debug.Log("Probed Bottom Left " + probedScreen.bottomLeft);
+        //Debug.Log("Rectified Top Left " + rectifiedScreen.topLeft);
+        //Debug.Log("Rectified Top Right " + rectifiedScreen.topRight);
+        //Debug.Log("Rectified Bottom Right " + rectifiedScreen.bottomRight);
+        //Debug.Log("Rectified Bottom Left " + rectifiedScreen.bottomLeft);
+
+        return rectifiedScreen;
+    }
+
+    void SpawnRectifiedCorners(ProjectionSurface rectifiedScreen)
+    {
+        GameObject tmpCorner5 = Instantiate(cornerSpherePrefab, currentScreen.transform);
+        GameObject tmpCorner6 = Instantiate(cornerSpherePrefab, currentScreen.transform);
+        GameObject tmpCorner7 = Instantiate(cornerSpherePrefab, currentScreen.transform);
+        GameObject tmpCorner8 = Instantiate(cornerSpherePrefab, currentScreen.transform);
+        tmpCorner5.name = "Screen #" + surfaces.Count + " Rectified Top Left";
+        tmpCorner6.name = "Screen #" + surfaces.Count + " Rectified Top Right";
+        tmpCorner7.name = "Screen #" + surfaces.Count + " Rectified Bottom Right";
+        tmpCorner8.name = "Screen #" + surfaces.Count + " Rectified Bottom Left";
+        tmpCorner5.transform.position = rectifiedScreen.topLeft;
+        tmpCorner6.transform.position = rectifiedScreen.topRight;
+        tmpCorner7.transform.position = rectifiedScreen.bottomRight;
+        tmpCorner8.transform.position = rectifiedScreen.bottomLeft;
+        tmpCorner5.GetComponent<MeshRenderer>().material.color = Color.red;
+        tmpCorner6.GetComponent<MeshRenderer>().material.color = Color.red;
+        tmpCorner7.GetComponent<MeshRenderer>().material.color = Color.red;
+        tmpCorner8.GetComponent<MeshRenderer>().material.color = Color.red;
+    }
+
+    void RemoveLastScreen()
+    {
+        if (corner == SurfaceCorner.NONE && surfaces.Count > 0)
+        {
+            surfaces.RemoveAt(surfaces.Count - 1);
+            Destroy(currentScreen);
+            currentScreen = GameObject.Find("Screen " + surfaces.Count);
+        }
+    }
+
+    void RemoveLastCorner()
+    {
+        switch (corner)
+        {
+            case SurfaceCorner.TopLeft:
+                break;
+
+            case SurfaceCorner.TopRight:
+                break;
+
+            case SurfaceCorner.BottomRight:
+                break;
+
+            case SurfaceCorner.BottomLeft:
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void SetCamera()
+    {
+        var trackedDevice = GameObject.Find("Calibration Probe");
+
+        if (trackedDevice != null)
+            Camera.main.transform.SetPositionAndRotation(trackedDevice.transform.position, trackedDevice.transform.rotation);
+    }
+
+    GameObject SpawnQuad(String name, ProjectionSurface surface)
     {
         GameObject newQuad = new GameObject();
         newQuad.name = name;
@@ -240,16 +270,11 @@ public class CalibrationManager : MonoBehaviour
         Mesh mesh = new Mesh();
 
         Vector3[] vertices = new Vector3[4];
-        vertices[0] = LL;
-        vertices[1] = LR;
-        vertices[2] = UL;
-        vertices[3] = UR;
+        vertices[0] = surface.bottomLeft;
+        vertices[1] = surface.bottomRight;
+        vertices[2] = surface.topLeft;
+        vertices[3] = surface.topRight;
         mesh.vertices = vertices;
-
-        //Debug.Log("Mesh vert 1 " + mesh.vertices[0]);
-        //Debug.Log("Mesh vert 2 " + mesh.vertices[1]);
-        //Debug.Log("Mesh vert 3 " + mesh.vertices[2]);
-        //Debug.Log("Mesh vert 4 " + mesh.vertices[3]);
 
         int[] tris = new int[6]
         {
@@ -280,25 +305,104 @@ public class CalibrationManager : MonoBehaviour
         mesh.uv = uv;
 
         meshFilter.mesh = mesh;
+
+        return newQuad;
     }//end spawnNewQuad()
 
-    void WriteToFile(string text)
+    void SaveCalibration()
     {
-        bool retValue;
-        try
+        var sts = new XmlWriterSettings()
         {
-            if (!System.IO.Directory.Exists(outPath))
-                System.IO.Directory.CreateDirectory(outPath);
-            System.IO.File.AppendAllText(outPath + "//calibration.xml", text);
-            retValue = true;
-        }
-        catch (System.Exception ex)
+            Indent = true,
+        };
+
+        using XmlWriter writer = XmlWriter.Create(outPath + "//calibration.xml", sts);
+
+        writer.WriteStartDocument();
+        writer.WriteStartElement("FishTank");
+
+        for (int i = 0; i < surfaces.Count; ++i)
         {
-            string ErrorMessages = "File Write Error # 2224\n" + ex.Message;
-            retValue = false;
-            Debug.LogError(ErrorMessages);
-        }
-    }//end writeToFile()
+            writer.WriteStartElement("screen");
 
 
+            writer.WriteStartElement("number");
+            writer.WriteValue(i);
+            writer.WriteEndElement(); //number
+
+
+            writer.WriteStartElement("topleft");
+
+            writer.WriteStartElement("x");
+            writer.WriteValue(surfaces[i].topLeft.x);
+            writer.WriteEndElement(); //x
+
+            writer.WriteStartElement("y");
+            writer.WriteValue(surfaces[i].topLeft.y);
+            writer.WriteEndElement(); //y
+
+            writer.WriteStartElement("z");
+            writer.WriteValue(surfaces[i].topLeft.z);
+            writer.WriteEndElement(); //z
+
+            writer.WriteEndElement(); //topleft
+
+
+            writer.WriteStartElement("topright");
+
+            writer.WriteStartElement("x");
+            writer.WriteValue(surfaces[i].topRight.x);
+            writer.WriteEndElement(); //x
+
+            writer.WriteStartElement("y");
+            writer.WriteValue(surfaces[i].topRight.y);
+            writer.WriteEndElement(); //y
+
+            writer.WriteStartElement("z");
+            writer.WriteValue(surfaces[i].topRight.z);
+            writer.WriteEndElement(); //z
+
+            writer.WriteEndElement(); //topRight
+
+
+            writer.WriteStartElement("bottomright");
+
+            writer.WriteStartElement("x");
+            writer.WriteValue(surfaces[i].bottomRight.x);
+            writer.WriteEndElement(); //x
+
+            writer.WriteStartElement("y");
+            writer.WriteValue(surfaces[i].bottomRight.y);
+            writer.WriteEndElement(); //y
+
+            writer.WriteStartElement("z");
+            writer.WriteValue(surfaces[i].bottomRight.z);
+            writer.WriteEndElement(); //z
+
+            writer.WriteEndElement(); //bottomRight
+
+
+            writer.WriteStartElement("bottomleft");
+
+            writer.WriteStartElement("x");
+            writer.WriteValue(surfaces[i].bottomLeft.x);
+            writer.WriteEndElement(); //x
+
+            writer.WriteStartElement("y");
+            writer.WriteValue(surfaces[i].bottomLeft.y);
+            writer.WriteEndElement(); //y
+
+            writer.WriteStartElement("z");
+            writer.WriteValue(surfaces[i].bottomLeft.z);
+            writer.WriteEndElement(); //z
+
+            writer.WriteEndElement(); //bottomLeft
+
+
+            writer.WriteEndElement(); //screen
+        }
+
+        writer.WriteEndElement(); //fishtank
+        writer.WriteEndDocument();
+    }
 }
