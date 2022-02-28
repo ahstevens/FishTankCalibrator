@@ -179,10 +179,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 226255420}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0340622846f7e1b489d1a4ef3be6ab79, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ffe50f65cee6d7459cd452acba55c5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preferredTrackedDeviceName: vr_controller_vive_1_5
+  preferredTrackedDeviceName: '{htc}vr_tracker_vive_1_0'
   gameObjectsToAssignTracker:
   - {fileID: 971187833}
 --- !u!4 &226255422
@@ -226,11 +226,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 273745474}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 7
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &273745476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,15 +244,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 273745474}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 7
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &273745477
 Transform:
   m_ObjectHideFlags: 0
@@ -274,7 +274,6 @@ GameObject:
   - component: {fileID: 342869823}
   - component: {fileID: 342869826}
   - component: {fileID: 342869825}
-  - component: {fileID: 342869824}
   m_Layer: 0
   m_Name: eighty20
   m_TagString: Untagged
@@ -296,19 +295,6 @@ Transform:
   m_Father: {fileID: 971187835}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &342869824
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 342869822}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &342869825
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -385,11 +371,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 348225370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 8
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &348225372
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,15 +389,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 348225370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 8
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &348225373
 Transform:
   m_ObjectHideFlags: 0
@@ -449,11 +435,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 415294250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 6
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &415294252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -463,15 +453,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 415294250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 6
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &415294253
 Transform:
   m_ObjectHideFlags: 0
@@ -606,11 +592,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 915600222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 2
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &915600224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -620,15 +610,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 915600222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 2
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &915600225
 Transform:
   m_ObjectHideFlags: 0
@@ -699,7 +685,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 941476413}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0da749c261d95d44a8d19aa5e976619a, type: 3}
+  m_Script: {fileID: 11500000, guid: 22a6f3666ff455e478bf289ae66bc3f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   probePoint: {fileID: 1692556292}
@@ -826,10 +812,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 971187833}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  index: 2
+  index: 1
   origin: {fileID: 0}
 --- !u!4 &971187835
 Transform:
@@ -877,15 +863,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1395223363}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 1
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &1395223365
 Transform:
   m_ObjectHideFlags: 0
@@ -909,11 +891,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1395223363}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 1
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!1 &1556801809
 GameObject:
   m_ObjectHideFlags: 0
@@ -1009,11 +995,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1744015136}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 4
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &1744015138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1023,15 +1013,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1744015136}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 4
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &1744015139
 Transform:
   m_ObjectHideFlags: 0
@@ -1057,7 +1043,6 @@ GameObject:
   - component: {fileID: 1814620580}
   - component: {fileID: 1814620583}
   - component: {fileID: 1814620582}
-  - component: {fileID: 1814620581}
   m_Layer: 0
   m_Name: rod
   m_TagString: Untagged
@@ -1079,20 +1064,6 @@ Transform:
   m_Father: {fileID: 971187835}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &1814620581
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1814620579}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  m_Radius: 0.5000001
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!23 &1814620582
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1169,11 +1140,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1910870174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 5
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &1910870176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1183,15 +1158,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1910870174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 5
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &1910870177
 Transform:
   m_ObjectHideFlags: 0
@@ -1233,11 +1204,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 2020845509}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37c2cf88f7c59f4c8cf5d3812568143, type: 3}
+  m_Script: {fileID: 11500000, guid: 1446954b5c824bd4bba15765e0513fc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 3
-  origin: {fileID: 0}
+  modelOverride: 
+  shader: {fileID: 0}
+  verbose: 0
+  createComponents: 1
+  updateDynamically: 1
 --- !u!114 &2020845511
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1247,15 +1222,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2020845509}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5890e3cad70bea64d91aef9145ba3454, type: 3}
+  m_Script: {fileID: 11500000, guid: 71acc3c33df90db408f0d9b1615fdf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   index: 3
-  modelOverride: 
-  shader: {fileID: 0}
-  verbose: 0
-  createComponents: 1
-  updateDynamically: 1
+  origin: {fileID: 0}
 --- !u!4 &2020845512
 Transform:
   m_ObjectHideFlags: 0
