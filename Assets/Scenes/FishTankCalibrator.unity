@@ -182,7 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0340622846f7e1b489d1a4ef3be6ab79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preferredTrackedDeviceName: '{htc}vr_tracker_vive_1_0'
+  preferredTrackedDeviceName: vr_controller_vive_1_5
   gameObjectsToAssignTracker:
   - {fileID: 971187833}
 --- !u!4 &226255422
@@ -193,7 +193,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 226255420}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.26027048, y: 0.7166727, z: 0.5600018}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -472,6 +472,54 @@ Transform:
   m_Father: {fileID: 1556801810}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &629544982
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 629544984}
+  - component: {fileID: 629544983}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &629544983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629544982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79fdcebdef179aa469689b8955a65a8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  screenNumber: 0
+  topLeft: {x: 1.97, y: 0, z: 0}
+  topRight: {x: 0, y: 1, z: 0}
+  bottomRight: {x: 0, y: 0, z: 1}
+  bottomLeft: {x: 1, y: 0, z: 1}
+--- !u!4 &629544984
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629544982}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.014999986, y: 0, z: -0.5}
+  m_LocalScale: {x: 1.23, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -688,7 +736,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0da749c261d95d44a8d19aa5e976619a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  probePoint: {fileID: 48575663}
+  probePoint: {fileID: 1692556292}
+  calibrationFilename: calibration.xml
+  loadCalibration: 0
 --- !u!4 &941476415
 Transform:
   m_ObjectHideFlags: 0
@@ -697,7 +747,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941476413}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.364144, y: -7.3938236, z: -14.096752}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

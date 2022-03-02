@@ -3,7 +3,7 @@ using System.Xml;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using Valve.VR;
+using UnityEditor;
 
 public class CalibrationManager : MonoBehaviour
 {
@@ -21,6 +21,10 @@ public class CalibrationManager : MonoBehaviour
 
     public GameObject probePoint;
 
+    public string calibrationFilename = "calibration.xml";
+
+    public bool loadCalibration = false;
+
     private GameObject currentScreen;
     private GameObject lastCornerObject;
 
@@ -33,21 +37,6 @@ public class CalibrationManager : MonoBehaviour
 
     String outPath;
 
-    struct ProjectionSurface
-    {
-        public Vector3 topLeft;
-        public Vector3 topRight;
-        public Vector3 bottomRight;
-        public Vector3 bottomLeft;
-        public ProjectionSurface(Vector3 topLeft, Vector3 topRight, Vector3 bottomRight, Vector3 bottomLeft)
-        {
-            this.topLeft = topLeft;
-            this.topRight = topRight;
-            this.bottomRight = bottomRight;
-            this.bottomLeft = bottomLeft;
-        }
-    }
-
     enum SurfaceCorner
     {
         TopLeft,
@@ -59,12 +48,12 @@ public class CalibrationManager : MonoBehaviour
     
     private SurfaceCorner corner;
 
-    private List<ProjectionSurface> surfaces;
+    private List<FishTankSurface> surfaces;
 
     // Start is called before the first frame update
     void Start()
     {
-        surfaces = new List<ProjectionSurface>();
+        surfaces = new List<FishTankSurface>();
 
         outPath = Application.dataPath;
 
@@ -82,6 +71,13 @@ public class CalibrationManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (loadCalibration)
+        {
+            ReadCalibration();
+            loadCalibration = false;
+        }
+
+
         if (Input.GetKeyDown(KeyCode.C))
         {
             SetCorner();
@@ -153,7 +149,7 @@ public class CalibrationManager : MonoBehaviour
                 lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Bottom Left";
                 lastCornerObject.transform.position = tmpScreenLL;
 
-                ProjectionSurface rectifiedScreen = Rectify(new ProjectionSurface(tmpScreenUL, tmpScreenUR, tmpScreenLR, tmpScreenLL));
+                FishTankSurface rectifiedScreen = Rectify(new FishTankSurface(tmpScreenUL, tmpScreenUR, tmpScreenLR, tmpScreenLL));
 
                 SpawnRectifiedCorners(rectifiedScreen);
 
@@ -171,13 +167,13 @@ public class CalibrationManager : MonoBehaviour
         }
     }
 
-    ProjectionSurface Rectify(ProjectionSurface probedScreen)
+    FishTankSurface Rectify(FishTankSurface probedScreen)
     {
         Debug.Log("Calculating Rectified Screen Corners");
 
         IntPtr screenCalibrator = CalcUsingCorners(tmpScreenUL.x, tmpScreenUL.y, tmpScreenUL.z, tmpScreenUR.x, tmpScreenUR.y, tmpScreenUR.z, tmpScreenLR.x, tmpScreenLR.y, tmpScreenLR.z, tmpScreenLL.x, tmpScreenLL.y, tmpScreenLL.z);
 
-        var rectifiedScreen = new ProjectionSurface(
+        var rectifiedScreen = new FishTankSurface(
             new Vector3(getCornerValue(screenCalibrator, 0), getCornerValue(screenCalibrator, 1), getCornerValue(screenCalibrator, 2)),
             new Vector3(getCornerValue(screenCalibrator, 3), getCornerValue(screenCalibrator, 4), getCornerValue(screenCalibrator, 5)),
             new Vector3(getCornerValue(screenCalibrator, 6), getCornerValue(screenCalibrator, 7), getCornerValue(screenCalibrator, 8)),
@@ -198,7 +194,7 @@ public class CalibrationManager : MonoBehaviour
         return rectifiedScreen;
     }
 
-    void SpawnRectifiedCorners(ProjectionSurface rectifiedScreen)
+    void SpawnRectifiedCorners(FishTankSurface rectifiedScreen)
     {
         GameObject tmpCorner5 = Instantiate(cornerSpherePrefab, currentScreen.transform);
         GameObject tmpCorner6 = Instantiate(cornerSpherePrefab, currentScreen.transform);
@@ -257,7 +253,7 @@ public class CalibrationManager : MonoBehaviour
             Camera.main.transform.SetPositionAndRotation(trackedDevice.transform.position, trackedDevice.transform.rotation);
     }
 
-    GameObject SpawnQuad(String name, ProjectionSurface surface)
+    GameObject SpawnQuad(String name, FishTankSurface surface)
     {
         GameObject newQuad = new GameObject();
         newQuad.name = name;
@@ -309,6 +305,31 @@ public class CalibrationManager : MonoBehaviour
         return newQuad;
     }//end spawnNewQuad()
 
+    void ReadCalibration()
+    {
+        Debug.Log("Reading Calibration File " + calibrationFilename);
+        XmlReader reader = XmlReader.Create(outPath + "//" + calibrationFilename);
+
+        while (reader.Read())
+        {
+            switch (reader.NodeType)
+            {
+                case XmlNodeType.Element:
+                    Debug.Log($"Start Element {reader.Name}");
+                    break;
+                case XmlNodeType.Text:
+                    Debug.Log($"Text Node: {reader.Value}");
+                    break;
+                case XmlNodeType.EndElement:
+                    Debug.Log($"End Element {reader.Name}");
+                    break;
+                default:
+                    Debug.Log($"Other node {reader.NodeType} with value {reader.Value}");
+                    break;
+            }
+        }
+    }
+
     void SaveCalibration()
     {
         var sts = new XmlWriterSettings()
@@ -316,7 +337,7 @@ public class CalibrationManager : MonoBehaviour
             Indent = true,
         };
 
-        using XmlWriter writer = XmlWriter.Create(outPath + "//calibration.xml", sts);
+        XmlWriter writer = XmlWriter.Create(outPath + "//" + calibrationFilename, sts);
 
         writer.WriteStartDocument();
         writer.WriteStartElement("FishTank");
