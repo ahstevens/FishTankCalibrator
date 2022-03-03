@@ -10,14 +10,6 @@ public class FishTankSurface : MonoBehaviour
     public Vector3 topRight;
     public Vector3 bottomRight;
     public Vector3 bottomLeft;
-
-    public FishTankSurface(Vector3 topLeft, Vector3 topRight, Vector3 bottomRight, Vector3 bottomLeft)
-    {
-        this.topLeft = topLeft;
-        this.topRight = topRight;
-        this.bottomRight = bottomRight;
-        this.bottomLeft = bottomLeft;
-    }
 }
 
 // A tiny custom editor for ExampleScript component
@@ -30,8 +22,7 @@ public class FishTankSurfaceVisualizaer : Editor
     {
         var t = target as FishTankSurface;
         var tr = t.transform;
-        var center = ((t.topLeft - t.bottomLeft) + (t.bottomRight - t.bottomLeft)) * 0.5f;
-        tr.position = center;
+        var center = t.bottomLeft + ((t.topLeft - t.bottomLeft) + (t.bottomRight - t.bottomLeft)) * 0.5f;        
         // display an orange disc where the object is
         var color = new Color(1, 0.8f, 0.4f, 1);
         Handles.color = color;

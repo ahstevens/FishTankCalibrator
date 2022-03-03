@@ -36,6 +36,21 @@ public class CalibrationManager : MonoBehaviour
     GameObject cornerSpherePrefab;
 
     String outPath;
+    
+    struct ProjectionSurface
+    {
+        public Vector3 topLeft;
+        public Vector3 topRight;
+        public Vector3 bottomRight;
+        public Vector3 bottomLeft;
+        public ProjectionSurface(Vector3 topLeft, Vector3 topRight, Vector3 bottomRight, Vector3 bottomLeft)
+        {
+            this.topLeft = topLeft;
+            this.topRight = topRight;
+            this.bottomRight = bottomRight;
+            this.bottomLeft = bottomLeft;
+        }
+    }
 
     enum SurfaceCorner
     {
@@ -48,12 +63,12 @@ public class CalibrationManager : MonoBehaviour
     
     private SurfaceCorner corner;
 
-    private List<FishTankSurface> surfaces;
+    private List<ProjectionSurface> surfaces;
 
     // Start is called before the first frame update
     void Start()
     {
-        surfaces = new List<FishTankSurface>();
+        surfaces = new List<ProjectionSurface>();
 
         outPath = Application.dataPath;
 
@@ -149,13 +164,20 @@ public class CalibrationManager : MonoBehaviour
                 lastCornerObject.name = "Screen #" + surfaces.Count + " Probed Bottom Left";
                 lastCornerObject.transform.position = tmpScreenLL;
 
-                FishTankSurface rectifiedScreen = Rectify(new FishTankSurface(tmpScreenUL, tmpScreenUR, tmpScreenLR, tmpScreenLL));
+                ProjectionSurface rectifiedScreen = Rectify(new ProjectionSurface(tmpScreenUL, tmpScreenUR, tmpScreenLR, tmpScreenLL));
 
                 SpawnRectifiedCorners(rectifiedScreen);
 
                 var newSurface = SpawnQuad("Screen Surface " + surfaces.Count.ToString(), rectifiedScreen);
 
                 newSurface.transform.parent = currentScreen.transform;
+
+                var fts = newSurface.AddComponent<FishTankSurface>();
+                fts.screenNumber = surfaces.Count;
+                fts.topLeft = rectifiedScreen.topLeft;
+                fts.topRight = rectifiedScreen.topRight;
+                fts.bottomRight = rectifiedScreen.bottomRight;
+                fts.bottomLeft = rectifiedScreen.bottomLeft;
 
                 surfaces.Add(rectifiedScreen);
 
@@ -167,13 +189,13 @@ public class CalibrationManager : MonoBehaviour
         }
     }
 
-    FishTankSurface Rectify(FishTankSurface probedScreen)
+    ProjectionSurface Rectify(ProjectionSurface probedScreen)
     {
         Debug.Log("Calculating Rectified Screen Corners");
 
         IntPtr screenCalibrator = CalcUsingCorners(tmpScreenUL.x, tmpScreenUL.y, tmpScreenUL.z, tmpScreenUR.x, tmpScreenUR.y, tmpScreenUR.z, tmpScreenLR.x, tmpScreenLR.y, tmpScreenLR.z, tmpScreenLL.x, tmpScreenLL.y, tmpScreenLL.z);
 
-        var rectifiedScreen = new FishTankSurface(
+        var rectifiedScreen = new ProjectionSurface(
             new Vector3(getCornerValue(screenCalibrator, 0), getCornerValue(screenCalibrator, 1), getCornerValue(screenCalibrator, 2)),
             new Vector3(getCornerValue(screenCalibrator, 3), getCornerValue(screenCalibrator, 4), getCornerValue(screenCalibrator, 5)),
             new Vector3(getCornerValue(screenCalibrator, 6), getCornerValue(screenCalibrator, 7), getCornerValue(screenCalibrator, 8)),
@@ -194,7 +216,7 @@ public class CalibrationManager : MonoBehaviour
         return rectifiedScreen;
     }
 
-    void SpawnRectifiedCorners(FishTankSurface rectifiedScreen)
+    void SpawnRectifiedCorners(ProjectionSurface rectifiedScreen)
     {
         GameObject tmpCorner5 = Instantiate(cornerSpherePrefab, currentScreen.transform);
         GameObject tmpCorner6 = Instantiate(cornerSpherePrefab, currentScreen.transform);
@@ -253,7 +275,7 @@ public class CalibrationManager : MonoBehaviour
             Camera.main.transform.SetPositionAndRotation(trackedDevice.transform.position, trackedDevice.transform.rotation);
     }
 
-    GameObject SpawnQuad(String name, FishTankSurface surface)
+    GameObject SpawnQuad(String name, ProjectionSurface surface)
     {
         GameObject newQuad = new GameObject();
         newQuad.name = name;
@@ -308,36 +330,74 @@ public class CalibrationManager : MonoBehaviour
     void ReadCalibration()
     {
         Debug.Log("Reading Calibration File " + calibrationFilename);
-        XmlReader reader = XmlReader.Create(outPath + "//" + calibrationFilename);
+        using XmlReader reader = XmlReader.Create(outPath + "//" + calibrationFilename);
 
-        while (reader.Read())
+        reader.MoveToContent();
+
+        if (reader.NodeType == XmlNodeType.Element && reader.Name != "FishTank")
         {
-            switch (reader.NodeType)
-            {
-                case XmlNodeType.Element:
-                    Debug.Log($"Start Element {reader.Name}");
-                    break;
-                case XmlNodeType.Text:
-                    Debug.Log($"Text Node: {reader.Value}");
-                    break;
-                case XmlNodeType.EndElement:
-                    Debug.Log($"End Element {reader.Name}");
-                    break;
-                default:
-                    Debug.Log($"Other node {reader.NodeType} with value {reader.Value}");
-                    break;
-            }
+            Debug.Log("File " + calibrationFilename + " does not appear to be a valid FishTank calibration file!");
+            reader.Close();
+            return;
+        }        
+
+        while (reader.ReadToFollowing("screen"))
+        {
+            float x, y, z;
+            Vector3 topleft, topright, bottomright, bottomleft;
+
+            
+            int screenNum = int.Parse(reader.GetAttribute("number"));
+            Debug.Log("Reading Screen " + screenNum);
+            
+            reader.ReadToDescendant("topleft"); // move to topLeft corner
+            x = Single.Parse(reader.GetAttribute("x"));
+            y = Single.Parse(reader.GetAttribute("y"));
+            z = Single.Parse(reader.GetAttribute("z"));
+            topleft = new Vector3(x, y, z);
+
+
+            reader.ReadToNextSibling("topright"); // move to topLeft corner
+            x = Single.Parse(reader.GetAttribute("x"));
+            y = Single.Parse(reader.GetAttribute("y"));
+            z = Single.Parse(reader.GetAttribute("z"));
+            topright = new Vector3(x, y, z);
+
+
+            reader.ReadToNextSibling("bottomright"); // move to topLeft corner
+            x = Single.Parse(reader.GetAttribute("x"));
+            y = Single.Parse(reader.GetAttribute("y"));
+            z = Single.Parse(reader.GetAttribute("z"));
+            bottomright = new Vector3(x, y, z);
+
+            reader.ReadToNextSibling("bottomleft"); // move to topLeft corner
+            x = Single.Parse(reader.GetAttribute("x"));
+            y = Single.Parse(reader.GetAttribute("y"));
+            z = Single.Parse(reader.GetAttribute("z"));
+            bottomleft = new Vector3(x, y, z);
+
+            GameObject tmp = new GameObject("Screen " + screenNum.ToString());
+            var fts = tmp.AddComponent<FishTankSurface>();
+            fts.screenNumber = screenNum;
+            fts.topLeft = topleft;
+            fts.topRight = topright;
+            fts.bottomRight = bottomright;
+            fts.bottomLeft = bottomleft;
         }
+
+        reader.Close();
     }
 
     void SaveCalibration()
     {
+        Debug.Log("Saving " + surfaces.Count + " surfaces to calibration file " + calibrationFilename);
+
         var sts = new XmlWriterSettings()
         {
             Indent = true,
         };
 
-        XmlWriter writer = XmlWriter.Create(outPath + "//" + calibrationFilename, sts);
+        using XmlWriter writer = XmlWriter.Create(outPath + "//" + calibrationFilename, sts);
 
         writer.WriteStartDocument();
         writer.WriteStartElement("FishTank");
@@ -346,76 +406,40 @@ public class CalibrationManager : MonoBehaviour
         {
             writer.WriteStartElement("screen");
 
-
-            writer.WriteStartElement("number");
-            writer.WriteValue(i);
-            writer.WriteEndElement(); //number
-
+            writer.WriteAttributeString("number", i.ToString());
 
             writer.WriteStartElement("topleft");
 
-            writer.WriteStartElement("x");
-            writer.WriteValue(surfaces[i].topLeft.x);
-            writer.WriteEndElement(); //x
-
-            writer.WriteStartElement("y");
-            writer.WriteValue(surfaces[i].topLeft.y);
-            writer.WriteEndElement(); //y
-
-            writer.WriteStartElement("z");
-            writer.WriteValue(surfaces[i].topLeft.z);
-            writer.WriteEndElement(); //z
+            writer.WriteAttributeString("x", surfaces[i].topLeft.x.ToString("F5"));
+            writer.WriteAttributeString("y", surfaces[i].topLeft.y.ToString("F5"));
+            writer.WriteAttributeString("z", surfaces[i].topLeft.z.ToString("F5"));
 
             writer.WriteEndElement(); //topleft
 
 
             writer.WriteStartElement("topright");
 
-            writer.WriteStartElement("x");
-            writer.WriteValue(surfaces[i].topRight.x);
-            writer.WriteEndElement(); //x
-
-            writer.WriteStartElement("y");
-            writer.WriteValue(surfaces[i].topRight.y);
-            writer.WriteEndElement(); //y
-
-            writer.WriteStartElement("z");
-            writer.WriteValue(surfaces[i].topRight.z);
-            writer.WriteEndElement(); //z
+            writer.WriteAttributeString("x", surfaces[i].topRight.x.ToString("F5"));
+            writer.WriteAttributeString("y", surfaces[i].topRight.y.ToString("F5"));
+            writer.WriteAttributeString("z", surfaces[i].topRight.z.ToString("F5"));
 
             writer.WriteEndElement(); //topRight
 
 
             writer.WriteStartElement("bottomright");
 
-            writer.WriteStartElement("x");
-            writer.WriteValue(surfaces[i].bottomRight.x);
-            writer.WriteEndElement(); //x
-
-            writer.WriteStartElement("y");
-            writer.WriteValue(surfaces[i].bottomRight.y);
-            writer.WriteEndElement(); //y
-
-            writer.WriteStartElement("z");
-            writer.WriteValue(surfaces[i].bottomRight.z);
-            writer.WriteEndElement(); //z
+            writer.WriteAttributeString("x", surfaces[i].bottomRight.x.ToString("F5"));
+            writer.WriteAttributeString("y", surfaces[i].bottomRight.y.ToString("F5"));
+            writer.WriteAttributeString("z", surfaces[i].bottomRight.z.ToString("F5"));
 
             writer.WriteEndElement(); //bottomRight
 
 
             writer.WriteStartElement("bottomleft");
 
-            writer.WriteStartElement("x");
-            writer.WriteValue(surfaces[i].bottomLeft.x);
-            writer.WriteEndElement(); //x
-
-            writer.WriteStartElement("y");
-            writer.WriteValue(surfaces[i].bottomLeft.y);
-            writer.WriteEndElement(); //y
-
-            writer.WriteStartElement("z");
-            writer.WriteValue(surfaces[i].bottomLeft.z);
-            writer.WriteEndElement(); //z
+            writer.WriteAttributeString("x", surfaces[i].bottomLeft.x.ToString("F5"));
+            writer.WriteAttributeString("y", surfaces[i].bottomLeft.y.ToString("F5"));
+            writer.WriteAttributeString("z", surfaces[i].bottomLeft.z.ToString("F5"));
 
             writer.WriteEndElement(); //bottomLeft
 
